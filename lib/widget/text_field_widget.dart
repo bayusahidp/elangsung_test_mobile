@@ -1,0 +1,26 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:elangsung_test_mobile/shared/constanta.dart';
+import 'package:flutter/material.dart';
+
+class TextFieldContainer extends StatelessWidget {
+  final Widget child;
+  const TextFieldContainer({
+    Key key, this.child,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      width: size.width * 0.8,
+      height: 53,
+      decoration: BoxDecoration(
+        color: cSixthGrey,
+      ),
+      child: child,
+    );
+  }
+}
