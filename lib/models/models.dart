@@ -7,3 +7,5 @@ part 'register_response.dart';
 part 'profile_response.dart';
 part 'profile_update_request.dart';
 part 'profile_update_response.dart';
+part 'change_password_request.dart';
+part 'change_password_response.dart';
