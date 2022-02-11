@@ -1,4 +1,4 @@
-// ignore_for_file: empty_statements, dead_code, prefer_const_constructors, unused_local_variable
+// ignore_for_file: empty_statements, dead_code, prefer_const_constructors, unused_local_variable, await_only_futures
 
 part of 'services.dart';
 
@@ -62,4 +62,32 @@ class ProfileServices {
       return ProfileUpdateResponseModel.fromJson(failed_response);
     };
   }
+
+  Future<http.StreamedResponse> updateFoto(String filepath) async {
+    var url = Uri.parse("$baseURL/user/update-foto");
+
+    String token = await _storage.read(key: 'token');
+
+    var request = await http.MultipartRequest(
+      'POST',
+      url,
+    );
+    request.files.add(await http.MultipartFile.fromPath('foto', filepath));
+    // request.fields['foto'] = filepath;
+    request.headers.addAll({
+      'Content-type': 'multipart/form-data',
+      // 'Accept': 'multipart/form-data',
+      'Authorization': 'Bearer ' + token,
+    });
+
+    var response = await request.send();
+
+    var responsed = await http.Response.fromStream(response);
+    final responseData = json.decode(responsed.body);
+    print(filepath);
+    print(responsed.body);
+
+    return response;
+  }
+
 }

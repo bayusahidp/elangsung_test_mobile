@@ -28,17 +28,21 @@ class _AvatarOvalState extends State<AvatarOval> {
       child: Container(
         height: 85,
         width: 85,
-        child: ClipOval(
-          child: Image.network(
-            widget.imageUrl,
-            errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
-              return Image.asset(
-                "assets/images/default-profile.png",
+        child: Column(
+          children: [
+            ClipOval(
+              child: Image.network(
+                widget.imageUrl,
+                errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+                  return Image.asset(
+                    "assets/images/default-profile.png",
+                    fit: BoxFit.cover,
+                  );
+                },
                 fit: BoxFit.cover,
-              );
-            },
-            fit: BoxFit.cover,
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
