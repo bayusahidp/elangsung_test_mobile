@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_null_in_if_null_operators
+// ignore_for_file: unnecessary_null_in_if_null_operators, prefer_null_aware_operators
 
 part of 'models.dart';
 
@@ -29,7 +29,7 @@ class LoginResponseModel {
     Map<String, dynamic> toJson() => {
         "status": status,
         "message": message,
-        "data": data.toJson(),
+        "data": data != null ? data.toJson() : null,
         "error": error,
     };
 }

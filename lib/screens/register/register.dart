@@ -1,10 +1,13 @@
-// ignore_for_file: prefer_const_constructors_in_immutables, prefer_const_constructors, prefer_final_fields, unused_field
+// ignore_for_file: prefer_const_constructors_in_immutables, prefer_const_constructors, prefer_final_fields, unused_field, unused_element, unnecessary_new, deprecated_member_use, avoid_single_cascade_in_expression_statements
 
+import 'package:elangsung_test_mobile/models/models.dart';
 import 'package:elangsung_test_mobile/screens/login/login.dart';
+import 'package:elangsung_test_mobile/services/services.dart';
 import 'package:elangsung_test_mobile/shared/constanta.dart';
 import 'package:elangsung_test_mobile/widget/button_half_outline_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_widger.dart';
 import 'package:elangsung_test_mobile/widget/text_field_widget.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:page_transition/page_transition.dart';
@@ -27,18 +30,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController fakultasController = TextEditingController();
   TextEditingController jurusanController = TextEditingController();
 
+  RegisterRequestModel requestModel;
+
   bool _isHidden = true;
   bool _isSelected = false;
 
   bool isUsername = false;
   bool isPass = false;
   bool isRegister = false;
+  String name = '';
   String email = '';
   String username = '';
   String password = '';
   String fakultas = '';
   String jurusan = '';
   String message = '';
+
+  @override
+  void initState() {
+    super.initState();
+    requestModel = new RegisterRequestModel(
+      name: name,
+      email: email,
+      username: username,
+      password: password,
+      fakultas: fakultas,
+      jurusan: jurusan,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -69,16 +89,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       textAlign: TextAlign.left,
                     ),
-                    // SizedBox(height: 10),
-                    // Text(
-                    //   "Silahkan login untuk masuk aplikasi",
-                    //   style: TextStyle(
-                    //     color: cEigthGrey,
-                    //     fontSize: 12,
-                    //     fontWeight: FontWeight.normal,
-                    //   ),
-                    //   textAlign: TextAlign.left,
-                    // ),
                   ],
                 ),
               ),
@@ -89,7 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.name = nameController.text,
+                        onSaved: (input) => requestModel.name = nameController.text,
                         controller: nameController,
                         decoration: InputDecoration(
                           icon: Icon(Icons.person, color: cThreedGrey,),
@@ -100,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.email = emailController.text,
+                        onSaved: (input) => requestModel.email = emailController.text,
                         controller: emailController,
                         decoration: InputDecoration(
                           icon: Icon(Icons.email, color: cThreedGrey,),
@@ -111,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.username = usernameController.text,
+                        onSaved: (input) => requestModel.username = usernameController.text,
                         controller: usernameController,
                         decoration: InputDecoration(
                           icon: Icon(Icons.person, color: cThreedGrey,),
@@ -122,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.fakultas = fakultasController.text,
+                        onSaved: (input) => requestModel.fakultas = fakultasController.text,
                         controller: fakultasController,
                         decoration: InputDecoration(
                           icon: Icon(Icons.school, color: cThreedGrey,),
@@ -133,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.jurusan = jurusanController.text,
+                        onSaved: (input) => requestModel.jurusan = jurusanController.text,
                         controller: jurusanController,
                         decoration: InputDecoration(
                           icon: Icon(Icons.business_center, color: cThreedGrey,),
@@ -144,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.password = passwordController.text,
+                        onSaved: (input) => requestModel.password = passwordController.text,
                         controller: passwordController,
                         obscureText: _isHidden,
                         decoration: InputDecoration(
@@ -171,7 +181,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 text: "Register",
                 colorback: cPrimaryOrange,
                 press: () {
-                  
+                  if (validateAndSave()) {
+                    setState(() {
+                      isRegister = true;
+                    });
+                    RegisterServices registerServices = new RegisterServices();
+                    registerServices.register(requestModel).then(
+                      (value) {
+                        if (value.status == true) {
+                          final snack = SnackBar(
+                            content: Text(
+                              value.message,
+                            ),
+                            duration: Duration(seconds: 3),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snack);
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                              type: PageTransitionType.fade,
+                              child: LoginScreen(),
+                            ),
+                          );
+                        }
+                        else {
+                          Flushbar(
+                            flushbarPosition: FlushbarPosition.TOP,
+                            flushbarStyle: FlushbarStyle.GROUNDED,
+                            message:  value.message,
+                            duration:  Duration(seconds: 3),
+                          )..show(context);
+                        }
+                      }
+                    );
+                  }
                 }
               ),
               SizedBox(height: 17),
@@ -198,5 +241,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() {
       _isHidden = !_isHidden;
     });
+  }
+
+  bool validateAndSave() {
+    final form = _formKey.currentState;
+    if (form != null && form.validate()) {
+      form.save();
+      return true;
+    }
+    return false;
   }
 }

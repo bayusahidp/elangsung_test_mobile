@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors_in_immutables, unused_field, prefer_final_fields, prefer_const_constructors, sized_box_for_whitespace, unnecessary_new, deprecated_member_use
+// ignore_for_file: prefer_const_constructors_in_immutables, unused_field, prefer_final_fields, prefer_const_constructors, sized_box_for_whitespace, unnecessary_new, deprecated_member_use, avoid_single_cascade_in_expression_statements
 
 import 'package:elangsung_test_mobile/models/models.dart';
 import 'package:elangsung_test_mobile/screens/account/account.dart';
@@ -9,6 +9,7 @@ import 'package:elangsung_test_mobile/shared/shared.dart';
 import 'package:elangsung_test_mobile/widget/button_half_outline_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_widger.dart';
 import 'package:elangsung_test_mobile/widget/text_field_widget.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:page_transition/page_transition.dart';
@@ -184,6 +185,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               value: passwordEnrypt,
                             );
                           }
+                          final snack = SnackBar(
+                            content: Text(
+                              value.message,
+                            ),
+                            duration: Duration(seconds: 3),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snack);
                           Navigator.push(
                             context,
                             PageTransition(
@@ -193,7 +201,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }
                         else {
-                          _showDialog(value.message);
+                          Flushbar(
+                            flushbarPosition: FlushbarPosition.TOP,
+                            flushbarStyle: FlushbarStyle.GROUNDED,
+                            message:  value.message,
+                            duration:  Duration(seconds: 3),
+                          )..show(context);
                         }
                       }
                     );
@@ -233,28 +246,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return true;
     }
     return false;
-  }
-
-  void _showDialog(message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: new Text(message),
-          actions: <Widget>[
-            new FlatButton(
-              child: new Text("Close"),
-              onPressed: () {
-                setState(() {
-                  isLogin = false;
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   _begin() async {

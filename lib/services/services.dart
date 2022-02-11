@@ -5,8 +5,10 @@ import 'package:elangsung_test_mobile/shared/shared.dart';
 import 'package:http/http.dart' as http;
 
 part 'login_service.dart';
+part 'register_service.dart';
 
 class Services {
   final loginServices = LoginServices();
+  final registerServices = RegisterServices();
 
 }
