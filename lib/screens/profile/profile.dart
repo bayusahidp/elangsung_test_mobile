@@ -1,26 +1,33 @@
-// ignore_for_file: prefer_const_constructors_in_immutables, prefer_const_constructors, prefer_final_fields, unused_field, unused_element, unnecessary_new, deprecated_member_use, avoid_single_cascade_in_expression_statements
+// ignore_for_file: prefer_const_constructors_in_immutables, prefer_const_constructors, avoid_unnecessary_containers, missing_return, avoid_single_cascade_in_expression_statements, unnecessary_new, prefer_if_null_operators
 
+import 'package:elangsung_test_mobile/bloc/blocs.dart';
 import 'package:elangsung_test_mobile/models/models.dart';
 import 'package:elangsung_test_mobile/screens/login/login.dart';
+import 'package:elangsung_test_mobile/screens/profile/change_password.dart';
 import 'package:elangsung_test_mobile/services/services.dart';
 import 'package:elangsung_test_mobile/shared/constanta.dart';
+import 'package:elangsung_test_mobile/widget/avatar_oval_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_outline_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_widger.dart';
+import 'package:elangsung_test_mobile/widget/error_message_to_login.dart';
+import 'package:elangsung_test_mobile/widget/refresh_widget.dart';
 import 'package:elangsung_test_mobile/widget/text_field_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:page_transition/page_transition.dart';
 
-class RegisterScreen extends StatefulWidget {
-  RegisterScreen({Key key}) : super(key: key);
+class ProfileScreen extends StatefulWidget {
+  ProfileScreen({Key key}) : super(key: key);
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final storage = FlutterSecureStorage();
+
+  AsyncSnapshot<ProfileResponseModel> snapshotStorage;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
@@ -28,65 +35,159 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController fakultasController = TextEditingController();
   TextEditingController jurusanController = TextEditingController();
+  TextEditingController alamatController = TextEditingController();
 
-  RegisterRequestModel requestModel;
+  ProfileUpdateRequestModel requestModel;
 
-  bool _isHidden = true;
-  bool _isSelected = false;
+  bool isLoading = false;
 
   bool isUsername = false;
   bool isPass = false;
-  bool isRegister = false;
+
+  String imgurl = 'wrong';
   String name = '';
-  String email = '';
   String username = '';
-  String password = '';
+  String email = '';
   String fakultas = '';
   String jurusan = '';
-  String message = '';
+  String alamat = '';
+
+  Future onRefresh() async{
+    await Future.delayed(Duration(milliseconds: 1000));
+    setState(() {
+      profileBloc.fetchDataProfile();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    requestModel = new RegisterRequestModel(
+    profileBloc.fetchDataProfile();
+    requestModel = new ProfileUpdateRequestModel(
       name: name,
       email: email,
       username: username,
-      password: password,
       fakultas: fakultas,
       jurusan: jurusan,
+      alamat: alamat,
     );
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (isLoading == true) {
+      return Container(
+        color: Colors.white,
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(cPrimaryOrange)
+          ),
+        )
+      );
+    }
+    return StreamBuilder(
+      stream: profileBloc.dataProfile,
+      builder: (context, AsyncSnapshot<ProfileResponseModel> snapshot) {
+        // print(snapshot.data);
+        if (snapshot.hasData) {
+          if (snapshot.data.status == true) {
+            return RefreshWidget(
+              onRefresh: onRefresh,
+              child: buildPage(snapshot)
+            );
+          }
+          else {
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) {
+                ShowDialogError.showDialogErrorToLogin(snapshot.data.message, context);
+              }
+            );
+          }
+        }
+        return Container(
+          color: Colors.white,
+          child: Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(cPrimaryOrange)
+            ),
+          )
+        );
+      }
+    );
+  }
+
+  Widget buildPage(AsyncSnapshot<ProfileResponseModel> snapshot) {
+    nameController = TextEditingController(text: snapshot.data.data.name);
+    usernameController = TextEditingController(text: snapshot.data.data.username);
+    emailController = TextEditingController(text: snapshot.data.data.email);
+    fakultasController = TextEditingController(text: snapshot.data.data.fakultas);
+    jurusanController = TextEditingController(text: snapshot.data.data.jurusan);
+    alamatController = TextEditingController(text: snapshot.data.data.alamat);
+
+    name = snapshot.data.data.name;
+    username = snapshot.data.data.username;
+    email = snapshot.data.data.email;
+    fakultas = snapshot.data.data.fakultas;
+    jurusan = snapshot.data.data.jurusan;
+    alamat = snapshot.data.data.alamat;
+
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          height: size.height,
-          color: Colors.white,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      appBar: AppBar(
+        backgroundColor: cPrimaryOrange,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
+      backgroundColor: Colors.white,
+      body: ListView(
+        shrinkWrap: true,
+        physics: AlwaysScrollableScrollPhysics(),
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(height: 54),
               Container(
-                margin: EdgeInsets.only(left: 40),
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  // ignore: prefer_const_literals_to_create_immutables
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
+                child: Stack(
+                  // ignore: deprecated_member_use
+                  overflow: Overflow.visible,
+                  alignment: Alignment.topCenter,
                   children: [
-                    Text(
-                      "Register",
-                      style: TextStyle(
-                        color: cEigthGrey,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.left,
+                    Container(
+                      height: 140,
+                      width: size.width,
+                      color: cPrimaryOrange,
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                          child: Column(
+                            children: [
+                              AvatarOval(
+                                imageUrl: snapshot.data.data.foto != null ? snapshot.data.data.foto : imgurl,
+                              )
+                            ],
+                          ),
+                        ),
+                        Text(
+                          "Change Avatar",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -102,7 +203,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: nameController,
                         decoration: InputDecoration(
                           icon: Icon(Icons.person, color: cThreedGrey,),
-                          hintText: "Full Name",
+                          hintText: "Nama Lengkap",
                           border: InputBorder.none,
                         ),
                       ),
@@ -153,39 +254,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     TextFieldContainer(
                       child: TextFormField(
-                        onSaved: (input) => requestModel.password = passwordController.text,
-                        controller: passwordController,
-                        obscureText: _isHidden,
+                        onSaved: (input) => requestModel.alamat = alamatController.text,
+                        controller: alamatController,
                         decoration: InputDecoration(
-                          icon: Icon(Icons.lock, color: cThreedGrey,),
-                          hintText: "Password",
+                          icon: Icon(Icons.map, color: cThreedGrey,),
+                          hintText: "Alamat",
                           border: InputBorder.none,
-                          suffixIcon: InkWell(
-                            onTap: _togglePasswordView,
-                            child: Icon(
-                              _isHidden
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              color: cThreedGrey,
-                            ),
-                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 27),
+              SizedBox(height: 10),
               ButtonHalfWidget(
-                text: "Register",
+                text: "Save",
                 colorback: cPrimaryOrange,
                 press: () {
                   if (validateAndSave()) {
                     setState(() {
-                      isRegister = true;
+                      isLoading = true;
                     });
-                    RegisterServices registerServices = new RegisterServices();
-                    registerServices.register(requestModel).then(
+                    ProfileServices profileServices = new ProfileServices();
+                    profileServices.updateProfile(requestModel).then(
                       (value) {
                         if (value.status == true) {
                           final snack = SnackBar(
@@ -194,12 +285,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             duration: Duration(seconds: 3),
                           );
+                          setState(() {
+                            isLoading = false;
+                          });
                           ScaffoldMessenger.of(context).showSnackBar(snack);
                           Navigator.push(
                             context,
                             PageTransition(
                               type: PageTransitionType.fade,
-                              child: LoginScreen(),
+                              child: ProfileScreen(),
                             ),
                           );
                         }
@@ -217,9 +311,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   }
                 }
               ),
-              SizedBox(height: 17),
+              SizedBox(height: 10),
+              ButtonHalfWidget(
+                text: "Change Password",
+                colorback: cSecondaryBlue,
+                press: () {
+                  Navigator.push(
+                    context,
+                    PageTransition(
+                      type: PageTransitionType.fade,
+                      child: ChangePasswordScreen(),
+                    ),
+                  );
+                }
+              ),
+              SizedBox(height: 10),
               ButtonHalfOutlineWidget(
-                text: "Login",
+                text: "Logout",
                 press: () {
                   Navigator.push(
                     context,
@@ -232,15 +340,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
-  }
-
-  void _togglePasswordView() {
-    setState(() {
-      _isHidden = !_isHidden;
-    });
   }
 
   bool validateAndSave() {
