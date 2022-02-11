@@ -1,8 +1,11 @@
-// ignore_for_file: prefer_const_constructors_in_immutables, unused_field, prefer_final_fields, prefer_const_constructors, sized_box_for_whitespace
+// ignore_for_file: prefer_const_constructors_in_immutables, unused_field, prefer_final_fields, prefer_const_constructors, sized_box_for_whitespace, unnecessary_new, deprecated_member_use
 
+import 'package:elangsung_test_mobile/models/models.dart';
 import 'package:elangsung_test_mobile/screens/account/account.dart';
 import 'package:elangsung_test_mobile/screens/register/register.dart';
+import 'package:elangsung_test_mobile/services/services.dart';
 import 'package:elangsung_test_mobile/shared/constanta.dart';
+import 'package:elangsung_test_mobile/shared/shared.dart';
 import 'package:elangsung_test_mobile/widget/button_half_outline_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_widger.dart';
 import 'package:elangsung_test_mobile/widget/text_field_widget.dart';
@@ -24,6 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  LoginRequestModel requestModel;
+
   bool _isHidden = true;
   bool _isSelected = false;
 
@@ -33,6 +38,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String username = '';
   String password = '';
   String message = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _begin();
+    requestModel = new LoginRequestModel(username: username, password: password);
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -83,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.username = usernameController.text,
+                        onSaved: (input) => requestModel.username = usernameController.text,
                         controller: usernameController,
                         decoration: InputDecoration(
                           icon: Icon(Icons.person, color: cThreedGrey,),
@@ -94,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     TextFieldContainer(
                       child: TextFormField(
-                        // onSaved: (input) => requestModel.password = passwordController.text,
+                        onSaved: (input) => requestModel.password = passwordController.text,
                         controller: passwordController,
                         obscureText: _isHidden,
                         decoration: InputDecoration(
@@ -147,13 +160,44 @@ class _LoginScreenState extends State<LoginScreen> {
                 text: "Login",
                 colorback: cPrimaryOrange,
                 press: () {
-                  Navigator.push(
-                    context,
-                    PageTransition(
-                      type: PageTransitionType.fade,
-                      child: AccountScreen(),
-                    ),
-                  );
+                  if (validateAndSave()) {
+                    setState(() {
+                      isLogin = true;
+                    });
+                    LoginServices loginServices = new LoginServices();
+                    loginServices.login(requestModel).then(
+                      (value) {
+                        if (value.status == true) {
+                          FlutterSecureStorage secureStorage = new FlutterSecureStorage();
+                          secureStorage.write(
+                            key: 'token',
+                            value: value.data.token
+                          );
+                          if (_isSelected) {
+                            secureStorage.write(
+                              key: 'username',
+                              value: usernameController.text,
+                            );
+                            final String passwordEnrypt = EncryptDecrypt.encryptData(passwordController.text);
+                            secureStorage.write(
+                              key: 'password',
+                              value: passwordEnrypt,
+                            );
+                          }
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                              type: PageTransitionType.fade,
+                              child: AccountScreen(),
+                            ),
+                          );
+                        }
+                        else {
+                          _showDialog(value.message);
+                        }
+                      }
+                    );
+                  }
                 }
               ),
               SizedBox(height: 17),
@@ -180,5 +224,47 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isHidden = !_isHidden;
     });
+  }
+
+  bool validateAndSave() {
+    final form = _formKey.currentState;
+    if (form != null && form.validate()) {
+      form.save();
+      return true;
+    }
+    return false;
+  }
+
+  void _showDialog(message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: new Text(message),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Close"),
+              onPressed: () {
+                setState(() {
+                  isLogin = false;
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _begin() async {
+    final _storage = FlutterSecureStorage();
+    String username = await _storage.read(key: 'username');
+    if (username != null) {
+      setState(() {
+        usernameController = TextEditingController(text: username);
+        _isSelected = true;
+      });
+    }
   }
 }
