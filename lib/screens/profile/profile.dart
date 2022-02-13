@@ -55,8 +55,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String fakultas = '';
   String jurusan = '';
   String alamat = '';
+  String messageresponse = '';
 
   PickedFile _imageFile;
+  Future<File> _imgFile;
+  String _image64;
   final ImagePicker _picker = ImagePicker();
 
   Future onRefresh() async{
@@ -330,18 +333,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         (value) {
                           if (value.status == true) {
                             if (_imageFile != null) {
-                              profileServices.updateFoto(_imageFile.path).then(
-                                (valueimg) {
-                                  if (valueimg.statusCode == 200) {
-                                    setState(() {
-                                      value.message = value.message + ', upload file success';
-                                    });
-                                  }
-                                });
+                              ProfileServices profileServices1 = new ProfileServices();
+                              profileServices1.updateFoto(_imageFile.path).then(
+                              (valueimg) {
+                                if (valueimg.statusCode == 200) {
+                                  setState(() {
+                                    messageresponse = ', upload file success';
+                                  });
+                                }
+                                else {
+                                  setState(() {
+                                    messageresponse = ', upload foto gagal';
+                                  });
+                                }
+                                final snack = SnackBar(
+                                  content: Text(
+                                    messageresponse,
+                                  ),
+                                  duration: Duration(seconds: 3),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(snack);
+                              });
                             }
                             final snack = SnackBar(
                               content: Text(
-                                value.message,
+                                value.message + messageresponse,
                               ),
                               duration: Duration(seconds: 3),
                             );
@@ -389,13 +405,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ButtonHalfOutlineWidget(
                   text: "Logout",
                   press: () {
-                    Navigator.push(
-                      context,
-                      PageTransition(
-                        type: PageTransitionType.fade,
-                        child: LoginScreen(),
-                      ),
-                    );
+                    LogoutServices logoutServices = new LogoutServices();
+                    logoutServices.logout().then(
+                    (value) {
+                      if (value.status == true) {
+                        final snack = SnackBar(
+                          content: Text(
+                            value.message,
+                          ),
+                          duration: Duration(seconds: 3),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snack);
+                        Navigator.pushReplacement(
+                          context,
+                          PageTransition(
+                            type: PageTransitionType.fade,
+                            child: LoginScreen(),
+                          ),
+                        );
+                      }
+                      else {
+                        final snack = SnackBar(
+                          content: Text(
+                            value.message,
+                          ),
+                          duration: Duration(seconds: 3),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snack);
+                      }
+                    });
                   }
                 ),
               ],

@@ -1,4 +1,4 @@
-// ignore_for_file: empty_statements, dead_code, prefer_const_constructors, unused_local_variable, await_only_futures
+// ignore_for_file: empty_statements, dead_code, prefer_const_constructors, unused_local_variable, await_only_futures, unnecessary_new
 
 part of 'services.dart';
 
@@ -20,7 +20,6 @@ class ProfileServices {
       final response = await http.get(url, headers: requestHeaders);
 
       if (response.statusCode == 200 || response.statusCode == 400 || response.statusCode == 401) {
-        // print(response.body);
         return ProfileResponseModel.fromJson(json.decode(response.body));
       }
       else {
@@ -63,19 +62,24 @@ class ProfileServices {
     };
   }
 
-  Future<http.StreamedResponse> updateFoto(String filepath) async {
+  Future updateFoto(String filepath) async {
     var url = Uri.parse("$baseURL/user/update-foto");
 
     String token = await _storage.read(key: 'token');
 
-    var request = await http.MultipartRequest(
+    http.MultipartRequest request = new http.MultipartRequest(
       'POST',
       url,
     );
-    request.files.add(await http.MultipartFile.fromPath('foto', filepath));
-    // request.fields['foto'] = filepath;
+    http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
+      'foto',
+      filepath,
+    );
+
+    request.files.add(multipartFile);
+
     request.headers.addAll({
-      'Content-type': 'multipart/form-data',
+      'Content-Type': 'multipart/form-data',
       // 'Accept': 'multipart/form-data',
       'Authorization': 'Bearer ' + token,
     });
@@ -84,8 +88,6 @@ class ProfileServices {
 
     var responsed = await http.Response.fromStream(response);
     final responseData = json.decode(responsed.body);
-    print(filepath);
-    print(responsed.body);
 
     return response;
   }

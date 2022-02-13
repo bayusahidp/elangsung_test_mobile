@@ -46,6 +46,7 @@ dependencies:
   flutter_animated_dialog: ^2.0.1
   pull_to_refresh: ^2.0.0
   image_picker: ^0.8.4+8
+  dio: ^4.0.4
 
 
 dev_dependencies:

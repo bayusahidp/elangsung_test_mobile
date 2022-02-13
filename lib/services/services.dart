@@ -9,11 +9,13 @@ part 'login_service.dart';
 part 'register_service.dart';
 part 'profile_service.dart';
 part 'change_password_service.dart';
+part 'logout_service.dart';
 
 class Services {
   final loginServices = LoginServices();
   final registerServices = RegisterServices();
   final profileServices = ProfileServices();
+  final logoutServices = LogoutServices();
 
   Future<ProfileResponseModel> fetchDataProfile() => profileServices.getProfile();
 
