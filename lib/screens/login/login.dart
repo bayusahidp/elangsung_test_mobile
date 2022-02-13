@@ -5,7 +5,6 @@ import 'package:elangsung_test_mobile/screens/profile/profile.dart';
 import 'package:elangsung_test_mobile/screens/register/register.dart';
 import 'package:elangsung_test_mobile/services/services.dart';
 import 'package:elangsung_test_mobile/shared/constanta.dart';
-import 'package:elangsung_test_mobile/shared/shared.dart';
 import 'package:elangsung_test_mobile/widget/button_half_outline_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_widger.dart';
 import 'package:elangsung_test_mobile/widget/text_field_widget.dart';
@@ -129,32 +128,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 10),
-              Container(
-                margin: EdgeInsets.fromLTRB(45, 0, 30, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: _isSelected,
-                      activeColor: cPrimaryOrange,
-                      onChanged: (bool newValue) {
-                        setState(() {
-                          _isSelected = newValue;
-                        });
-                      },
-                    ),
-                    Text(
-                      "Remember me",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                        color: cEigthGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               SizedBox(height: 27),
               ButtonHalfWidget(
                 text: "Login",
@@ -173,17 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             key: 'token',
                             value: value.data.token
                           );
-                          if (_isSelected) {
-                            secureStorage.write(
-                              key: 'username',
-                              value: usernameController.text,
-                            );
-                            final String passwordEnrypt = EncryptDecrypt.encryptData(passwordController.text);
-                            secureStorage.write(
-                              key: 'password',
-                              value: passwordEnrypt,
-                            );
-                          }
                           final snack = SnackBar(
                             content: Text(
                               value.message,

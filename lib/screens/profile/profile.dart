@@ -8,8 +8,6 @@ import 'package:elangsung_test_mobile/screens/login/login.dart';
 import 'package:elangsung_test_mobile/screens/profile/change_password.dart';
 import 'package:elangsung_test_mobile/services/services.dart';
 import 'package:elangsung_test_mobile/shared/constanta.dart';
-import 'package:elangsung_test_mobile/widget/avatar_oval_widget.dart';
-import 'package:elangsung_test_mobile/widget/avatar_show_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_outline_widget.dart';
 import 'package:elangsung_test_mobile/widget/button_half_widger.dart';
 import 'package:elangsung_test_mobile/widget/error_message_to_login.dart';
@@ -58,8 +56,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String messageresponse = '';
 
   PickedFile _imageFile;
-  Future<File> _imgFile;
-  String _image64;
   final ImagePicker _picker = ImagePicker();
 
   Future onRefresh() async{
@@ -168,7 +164,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.white,
                   ),
                   child: Stack(
-                    // ignore: deprecated_member_use
                     overflow: Overflow.visible,
                     alignment: Alignment.topCenter,
                     children: [
@@ -338,12 +333,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               (valueimg) {
                                 if (valueimg.statusCode == 200) {
                                   setState(() {
-                                    messageresponse = ', upload file success';
+                                    messageresponse = 'upload foto success';
                                   });
                                 }
                                 else {
                                   setState(() {
-                                    messageresponse = ', upload foto gagal';
+                                    messageresponse = 'upload foto gagal';
                                   });
                                 }
                                 final snack = SnackBar(
